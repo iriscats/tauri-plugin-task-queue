@@ -1,11 +1,10 @@
-use tauri_plugin_task_queue_lib::{Task, TaskOrigin, TaskPriority, TaskStatus, AppState};
-use tauri_plugin_task_queue_lib::task::TaskQueue;
+use tauri_plugin_task_queue::{Task, TaskOrigin, TaskPriority, TaskStatus, AppState};
 use serde_json::Value;
 use tauri::{Manager, Emitter};
 
-fn main() {
+pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_task_queue_lib::init())
+        .plugin(tauri_plugin_task_queue::init())
         .setup(|app| {
             // 获取插件提供的任务队列
             let state = app.state::<AppState>();
@@ -40,46 +39,8 @@ fn main() {
 
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![enqueue_task, list_tasks])
+        .invoke_handler(tauri::generate_handler![
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
-}
-
-/// 从前端添加任务的命令
-#[tauri::command]
-async fn enqueue_task(
-    app: tauri::AppHandle,
-    task_type: String,
-    params: Option<Value>,
-    priority: Option<u8>,
-) -> Result<String, String> {
-    // 获取任务队列
-    let state = app.state::<AppState>();
-    let queue = state.queue.lock().unwrap().clone().unwrap();
-    
-    // 创建任务
-    let task = queue.enqueue(
-        &task_type,
-        TaskOrigin::Frontend,
-        params.unwrap_or(Value::Null),
-        match priority.unwrap_or(1) {
-            0 => TaskPriority::High,
-            2 => TaskPriority::Low,
-            _ => TaskPriority::Medium,
-        }
-    );
-    
-    Ok(task.id)
-}
-
-/// 列出所有任务的命令
-#[tauri::command]
-async fn list_tasks(app: tauri::AppHandle) -> Result<Vec<Task>, String> {
-    // 获取任务队列
-    let state = app.state::<AppState>();
-    let queue = state.queue.lock().unwrap().clone().unwrap();
-    
-    // 获取任务列表
-    let tasks = queue.list();
-    Ok(tasks)
 }

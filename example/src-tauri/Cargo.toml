@@ -1,7 +1,7 @@
 [package]
-name = "tauri_task_queue_frontend_demo"
-version = "0.5.0"
-description = "Mod Integrate Tool"
+name = "tauri_plugin_task_queue_demo"
+version = "1.0.0"
+description = ""
 authors = ["iriscat"]
 edition = "2021"
 
@@ -11,7 +11,7 @@ edition = "2021"
 # The `_lib` suffix may seem redundant, but it is necessary
 # to make the lib name unique and wouldn't conflict with the bin name.
 # This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
-name = "tauri_task_queue_frontend_demo"
+name = "tauri_plugin_task_queue_demo"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build]
@@ -23,4 +23,13 @@ tauri-build = { version = "2", features = [] }
 
 
 [dependencies]
-tauri = { version = "2.8.3", features = ["devtools", "protocol-asset"] }
+tauri = { version = "2.8.3", features = ["devtools"] }
+
+# json
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+tokio = { version = "1", features = ["rt-multi-thread", "macros", "time"] }
+
+# 本地路径依赖
+tauri-plugin-task-queue = { path = "../../../tauri-plugin-task-queue" }
