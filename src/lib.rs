@@ -42,7 +42,7 @@ pub fn init() -> TauriPlugin<tauri::Wry> {
         .invoke_handler(tauri::generate_handler![
             commands::add_backend_task,
             commands::enqueue_task,
-            commands::list_tasks
+            commands::get_all_tasks
         ])
         .build()
 }

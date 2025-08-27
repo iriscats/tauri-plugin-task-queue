@@ -10,14 +10,24 @@
         "frontendDist": "../"
     },
     "app": {
+        "withGlobalTauri": true,
         "windows": [
             {
                 "url": "index.html",
-                "title": "demo",
+                "title": "main",
                 "width": 1200,
-                "height": 628
+                "height": 1200
             }
-        ]
+        ],
+        "security": {
+            "csp": null,
+            "assetProtocol": {
+                "scope": [
+                    "**/*"
+                ],
+                "enable": true
+            }
+        }
     },
     "bundle": {
         "active": true,

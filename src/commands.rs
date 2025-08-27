@@ -48,7 +48,7 @@ pub fn enqueue_task(
 
 /// 列出所有任务的命令
 #[tauri::command]
-pub fn list_tasks(state: State<'_, AppState>) -> Result<Vec<Task>, String> {
+pub fn get_all_tasks(state: State<'_, AppState>) -> Result<Vec<Task>, String> {
     let queue = state.queue.lock().unwrap();
     let queue_ref = queue.as_ref().ok_or("Queue not initialized")?;
     
