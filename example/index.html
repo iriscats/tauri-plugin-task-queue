@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tauri Task Queue 示例</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Tauri 任务队列插件示例</h1>
+            <p>这是一个展示如何使用 Tauri 任务队列插件的前端示例</p>
+        </header>
+        
+        <main>
+            <section class="task-form">
+                <h2>添加任务</h2>
+                <div class="form-group">
+                    <label for="taskType">任务类型:</label>
+                    <select id="taskType">
+                        <option value="download">下载任务</option>
+                        <option value="process">处理任务</option>
+                        <option value="upload">上传任务</option>
+                        <option value="compress">压缩任务</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskPriority">优先级:</label>
+                    <select id="taskPriority">
+                        <option value="0">高</option>
+                        <option value="1" selected>中</option>
+                        <option value="2">低</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="taskParams">参数 (JSON):</label>
+                    <textarea id="taskParams" placeholder='{"url": "https://example.com/file.zip", "savePath": "./downloads/file.zip"}' rows="4">{}</textarea>
+                </div>
+                
+                <button id="addTaskBtn">添加任务</button>
+            </section>
+            
+            <section class="task-list">
+                <h2>任务列表</h2>
+                <div class="controls">
+                    <button id="refreshTasksBtn">刷新任务列表</button>
+                    <button id="clearCompletedBtn">清除已完成任务</button>
+                </div>
+                <div id="tasksContainer">
+                    <p class="empty-state">暂无任务，请添加任务</p>
+                </div>
+            </section>
+        </main>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
