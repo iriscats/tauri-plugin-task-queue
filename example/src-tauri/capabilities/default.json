@@ -1,12 +1,12 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "Capability for the main window",
-  "windows": [
-    "main"
-  ],
+  "description": "Default capability",
+  "windows": ["main"],
   "permissions": [
+    "core:event:default",
     "core:event:allow-listen",
-    "core:event:default"
+    "task-queue:allow-add-task",
+    "task-queue:allow-get-all-tasks"
   ]
 }

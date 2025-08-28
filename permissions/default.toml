@@ -1,0 +1,8 @@
+[default]
+description = "Default permissions for the plugin"
+permissions = [
+    "allow-add-task",
+    "deny-add-task",
+    "allow-get-all-tasks",
+    "deny-get-all-tasks"
+]

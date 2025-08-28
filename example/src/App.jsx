@@ -13,7 +13,7 @@ const App = () => {
         const loadTasks = async () => {
             try {
                 // 从Tauri后端获取初始任务数据
-                const response = await invoke('get_all_tasks');
+                const response = await invoke('plugin:task-queue|get_all_tasks');
                 setTasks(response);
             } catch (error) {
                 console.error('Failed to load tasks:', error);
@@ -54,7 +54,7 @@ const App = () => {
 
     const addTask = async (taskData) => {
         try {
-            const newTask = await invoke('add_task', {task: taskData});
+            const newTask = await invoke('plugin:task-queue|add_task', {task: taskData});
             setTasks(prevTasks => [...prevTasks, newTask]);
             return true;
         } catch (error) {

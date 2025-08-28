@@ -2119,6 +2119,48 @@
           "type": "string",
           "const": "core:window:deny-unminimize",
           "markdownDescription": "Denies the unminimize command without any pre-configured scope."
+        },
+        {
+          "description": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-add-task`\n- `deny-add-task`\n- `allow-get-all-tasks`\n- `deny-get-all-tasks`",
+          "type": "string",
+          "const": "task-queue:default",
+          "markdownDescription": "Default permissions for the plugin\n#### This default permission set includes:\n\n- `allow-add-task`\n- `deny-add-task`\n- `allow-get-all-tasks`\n- `deny-get-all-tasks`"
+        },
+        {
+          "description": "Enables the add_task command without any pre-configured scope.",
+          "type": "string",
+          "const": "task-queue:allow-add-task",
+          "markdownDescription": "Enables the add_task command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the enqueue_task command without any pre-configured scope.",
+          "type": "string",
+          "const": "task-queue:allow-enqueue-task",
+          "markdownDescription": "Enables the enqueue_task command without any pre-configured scope."
+        },
+        {
+          "description": "Enables the get_all_tasks command without any pre-configured scope.",
+          "type": "string",
+          "const": "task-queue:allow-get-all-tasks",
+          "markdownDescription": "Enables the get_all_tasks command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the add_task command without any pre-configured scope.",
+          "type": "string",
+          "const": "task-queue:deny-add-task",
+          "markdownDescription": "Denies the add_task command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the enqueue_task command without any pre-configured scope.",
+          "type": "string",
+          "const": "task-queue:deny-enqueue-task",
+          "markdownDescription": "Denies the enqueue_task command without any pre-configured scope."
+        },
+        {
+          "description": "Denies the get_all_tasks command without any pre-configured scope.",
+          "type": "string",
+          "const": "task-queue:deny-get-all-tasks",
+          "markdownDescription": "Denies the get_all_tasks command without any pre-configured scope."
         }
       ]
     },

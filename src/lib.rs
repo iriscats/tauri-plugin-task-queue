@@ -9,40 +9,50 @@ pub struct AppState {
     pub queue: Mutex<Option<task::TaskQueue>>,
 }
 
-/// 注册前端回调方法到任务处理器
-/// 
-/// # 参数
-/// * `queue` - 任务队列实例
-/// * `task_type` - 任务类型
-/// * `handler` - 前端回调方法
-pub fn register_frontend_handler<F>(app: &mut tauri::App<tauri::Wry>, task_type: &str, handler: F)
-where
-    F: Fn(Task, tauri::AppHandle<tauri::Wry>) -> tokio::task::JoinHandle<()> + Send + Sync + 'static,
-{
-    let state = app.state::<AppState>();
-    let queue_option = state.queue.lock().unwrap();
-    if let Some(queue) = queue_option.as_ref() {
-        queue.register_handler(task_type, handler);
+pub struct Builder {
+    handlers: std::collections::HashMap<String, Box<task::TaskHandler>>,
+}
+
+impl Builder {
+    pub fn new() -> Self {
+        Self {
+            handlers: std::collections::HashMap::new(),
+        }
+    }
+
+    pub fn add_handler<F>(mut self, task_type: &str, handler: F) -> Self
+    where
+        F: Fn(Task, tauri::AppHandle<tauri::Wry>) -> tokio::task::JoinHandle<()> + Send + Sync + 'static,
+    {
+        self.handlers.insert(task_type.to_string(), Box::new(handler));
+        self
+    }
+
+    pub fn build(self) -> TauriPlugin<tauri::Wry> {
+        tauri::plugin::Builder::new("task-queue")
+            .setup(move |app, _api| {
+                let mut queue = task::TaskQueue::new(app.app_handle().clone());
+
+                for (task_type, handler) in self.handlers {
+                    queue.register_handler(&task_type, handler);
+                }
+
+                app.manage(AppState {
+                    queue: Mutex::new(Some(queue)),
+                });
+
+                Ok(())
+            })
+            .invoke_handler(tauri::generate_handler![
+                commands::add_task,
+                commands::get_all_tasks
+            ])
+            .build()
     }
 }
 
+
 /// 插件初始化入口
-pub fn init() -> TauriPlugin<tauri::Wry> {
-    tauri::plugin::Builder::new("tauri-plugin-task-queue")
-        .setup(|app, _api| {
-            let queue = task::TaskQueue::new(app.app_handle().clone());
-
-            // 将队列存储在应用程序状态中
-            app.manage(AppState {
-                queue: Mutex::new(Some(queue)),
-            });
-
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![
-            commands::add_backend_task,
-            commands::enqueue_task,
-            commands::get_all_tasks
-        ])
-        .build()
+pub fn init() -> Builder {
+    Builder::new()
 }
