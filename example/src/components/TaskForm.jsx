@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 const TaskForm = ({ onAddTask }) => {
   const [taskType, setTaskType] = useState('download');
   const [priority, setPriority] = useState('1');
+  const [params, setParams] = useState('{}');
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e) => {
@@ -11,19 +12,22 @@ const TaskForm = ({ onAddTask }) => {
 
     setIsSubmitting(true);
     try {
-      const taskData = {
-        type: taskType,
-        priority: parseInt(priority, 10),
-        status: 'pending',
-        progress: 0,
-        created_at: new Date().toISOString()
-      };
+        let paramsValue;
+        try {
+            paramsValue = JSON.parse(params);
+        } catch (error) {
+            console.error("Invalid JSON for params:", error);
+            alert("参数必须是有效的JSON格式！");
+            setIsSubmitting(false);
+            return;
+        }
 
-      const success = await onAddTask(taskData);
+      const success = await onAddTask(taskType, paramsValue, parseInt(priority, 10));
       if (success) {
         // 重置表单
         setTaskType('download');
         setPriority('1');
+        setParams('{}');
       }
     } finally {
       setIsSubmitting(false);
@@ -46,6 +50,17 @@ const TaskForm = ({ onAddTask }) => {
           <option value="upload">上传任务</option>
           <option value="compress">压缩任务</option>
         </select>
+      </div>
+
+      <div className="form-group">
+        <label htmlFor="taskParams">参数 (JSON):</label>
+        <textarea
+            id="taskParams"
+            value={params}
+            onChange={(e) => setParams(e.target.value)}
+            disabled={isSubmitting}
+            rows="3"
+        />
       </div>
 
       <div className="form-group">

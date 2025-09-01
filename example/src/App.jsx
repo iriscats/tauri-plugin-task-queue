@@ -52,10 +52,13 @@ const App = () => {
         };
     }, []);
 
-    const addTask = async (taskData) => {
+    const addTask = async (taskType, params, priority) => {
         try {
-            const newTask = await invoke('plugin:task-queue|add_task', {task: taskData});
-            setTasks(prevTasks => [...prevTasks, newTask]);
+            await invoke('plugin:task-queue|add_task', {
+                taskType,
+                params,
+                priority
+            });
             return true;
         } catch (error) {
             console.error('Failed to add task:', error);

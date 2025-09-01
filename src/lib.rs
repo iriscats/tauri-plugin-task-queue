@@ -1,16 +1,14 @@
-pub mod task;
-pub use task::{Task, TaskStatus, TaskOrigin, TaskPriority, TaskHandler};
+pub mod core;
 mod commands;
 
-use std::sync::Mutex;
-use tauri::{Manager, plugin::TauriPlugin};
+use tauri::{Manager, plugin::TauriPlugin, Wry};
+use core::manager::TaskManager;
+use crate::core::task::Task;
 
-pub struct AppState {
-    pub queue: Mutex<Option<task::TaskQueue>>,
-}
+pub type TaskHandler = dyn Fn(Task, tauri::AppHandle<Wry>) -> tokio::task::JoinHandle<()> + Send + Sync;
 
 pub struct Builder {
-    handlers: std::collections::HashMap<String, Box<task::TaskHandler>>,
+    handlers: std::collections::HashMap<String, Box<TaskHandler>>,
 }
 
 impl Builder {
@@ -28,17 +26,20 @@ impl Builder {
         self
     }
 
-    pub fn build(self) -> TauriPlugin<tauri::Wry> {
+    pub fn build(self) -> TauriPlugin<Wry> {
         tauri::plugin::Builder::new("task-queue")
             .setup(move |app, _api| {
-                let mut queue = task::TaskQueue::new(app.app_handle().clone());
+                let app_handle = app.app_handle().clone();
+                let manager = TaskManager::new(app_handle.clone());
 
-                for (task_type, handler) in self.handlers {
-                    queue.register_handler(&task_type, handler);
-                }
+                let handlers = self.handlers;
+                app.manage(manager);
 
-                app.manage(AppState {
-                    queue: Mutex::new(Some(queue)),
+                tauri::async_runtime::spawn(async move {
+                    let manager = app_handle.state::<TaskManager>();
+                    for (task_type, handler) in handlers {
+                        manager.register_handler(&task_type, handler).await;
+                    }
                 });
 
                 Ok(())
@@ -51,8 +52,6 @@ impl Builder {
     }
 }
 
-
-/// 插件初始化入口
 pub fn init() -> Builder {
     Builder::new()
 }

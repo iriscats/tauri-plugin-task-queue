@@ -45,6 +45,30 @@ Denies the add_task command without any pre-configured scope.
 </tr>
 
 <tr>
+<td>
+
+`task-queue:allow-enqueue-task`
+
+</td>
+<td>
+
+Enables the enqueue_task command without any pre-configured scope.
+
+</td>
+</tr>
+
+<tr>
+<td>
+
+`task-queue:deny-enqueue-task`
+
+</td>
+<td>
+
+Denies the enqueue_task command without any pre-configured scope.
+
+</td>
+</tr>
 
 <tr>
 <td>

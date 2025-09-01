@@ -1,5 +1,6 @@
-use tauri_plugin_task_queue::{self, Task, TaskStatus};
+use tauri_plugin_task_queue::{self};
 use tauri::{Emitter, Manager};
+use tauri_plugin_task_queue::core::task::{Task, TaskStatus};
 
 pub fn run() {
     let plugin = tauri_plugin_task_queue::init().add_handler(

@@ -16,7 +16,7 @@
 
 ```toml
 [dependencies]
-tauri-plugin-task-queue = { path = "./tauri-plugin-task-queue" }
+tauri-plugin-task-queue = { path = "." }
 ```
 
 ## 使用方法
@@ -26,43 +26,33 @@ tauri-plugin-task-queue = { path = "./tauri-plugin-task-queue" }
 在 `main.rs` 中初始化任务队列：
 
 ```rust
-use tauri_plugin_task_queue::{TaskQueue, register_frontend_handler};
+use tauri_plugin_task_queue::{init, core::task::{Task, TaskStatus}};
+use tauri::Manager;
 
 fn main() {
     tauri::Builder::default()
         .setup(|app| {
-            let queue = TaskQueue::new(app.handle().clone());
-            
-            // 注册任务处理器
-            register_frontend_handler(&queue, "download", move |mut task, app| {
-                // 实现任务逻辑
-            });
-            
+            init()
+                .add_handler("download", |mut task, app_handle| {
+                    tokio::spawn(async move {
+                        println!("Handling download task: {}", task.id);
+                        // 模拟任务执行
+                        for i in 0..=100 {
+                            tokio::time::sleep(std::time::Duration::from_millis(50)).await;
+                            task.progress = i;
+                            app_handle.emit_all("task_event", task.clone()).unwrap();
+                        }
+                        task.status = TaskStatus::Completed;
+                        app_handle.emit_all("task_event", task).unwrap();
+                    })
+                })
+                .build()
+                .setup(app);
             Ok(())
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
-```
-
-### 注册前端回调方法
-
-使用 `register_frontend_handler` 函数可以将前端的回调方法注册到任务处理器中：
-
-```rust
-use tauri_plugin_task_queue::{TaskQueue, register_frontend_handler};
-
-// 创建任务队列
-let queue = TaskQueue::new(app_handle);
-
-// 注册前端回调方法
-register_frontend_handler(&queue, "my_task_type", move |mut task, app| {
-    // 在这里实现任务逻辑
-    tokio::task::spawn(async move {
-        // 任务执行代码
-        // 可以通过 app.emit() 发送事件到前端
-    })
-});
 ```
 
 ### 前端调用
@@ -73,40 +63,38 @@ register_frontend_handler(&queue, "my_task_type", move |mut task, app| {
 import { invoke } from '@tauri-apps/api';
 
 // 添加任务到队列
-await invoke('enqueue_task', {
+await invoke('add_task', {
   taskType: 'my_task_type',
   params: { /* 任务参数 */ },
   priority: 1  // 0: 高, 1: 中, 2: 低
 });
+
+// 获取所有任务
+await invoke('get_all_tasks');
 ```
 
 ## API 参考
 
-### `register_frontend_handler`
+### `init()`
 
-注册前端回调方法到任务处理器。
+初始化任务队列插件。
 
-**参数：**
-- `queue`: 任务队列实例
-- `task_type`: 任务类型
-- `handler`: 前端回调方法
+### `Builder.add_handler(task_type, handler)`
 
-### `TaskQueue::new`
-
-创建一个新的任务队列实例。
+注册任务处理器。
 
 **参数：**
-- `app`: Tauri 应用句柄
+- `task_type`: 任务类型字符串。
+- `handler`: 任务处理函数，接受 `Task` 和 `AppHandle` 作为参数，返回 `tokio::task::JoinHandle<()>`。
 
-### `TaskQueue::enqueue`
+### `Builder.build()`
 
-将任务加入队列。
+构建 Tauri 插件。
 
-**参数：**
-- `task_type`: 任务类型
-- `origin`: 任务来源
-- `params`: 任务参数
-- `priority`: 任务优先级
+### Tauri 命令
+
+- `add_task(taskType: string, params: object, priority?: number)`: 添加任务到队列。
+- `get_all_tasks()`: 获取所有任务列表。
 
 ## 前端示例
 
@@ -124,81 +112,6 @@ await invoke('enqueue_task', {
 1. 确保已安装Tauri开发环境
 2. 在项目根目录运行：`cargo tauri dev`
 3. 应用启动后，可以添加和管理任务
-
-### 前端集成说明
-
-在Tauri应用的主进程中初始化任务队列并注册处理器：
-
-```rust
-use tauri_plugin_task_queue::{TaskQueue, register_frontend_handler};
-
-fn main() {
-    tauri::Builder::default()
-        .setup(|app| {
-            let queue = TaskQueue::new(app.handle().clone());
-            
-            // 注册前端任务处理器
-            register_frontend_handler(&queue, "download", move |mut task, app| {
-                // 实现下载任务逻辑
-            });
-            
-            // 将队列存储在应用程序状态中
-            app.manage(queue);
-            
-            Ok(())
-        })
-        .invoke_handler(tauri::generate_handler![
-            // 注册前端可调用的命令
-            enqueue_task,
-            list_tasks,
-        ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
-}
-```
-
-从前端添加任务：
-
-```javascript
-// 添加任务
-const addTask = async (taskType, params, priority) => {
-  try {
-    const taskId = await window.__TAURI__.invoke('enqueue_task', {
-      taskType,
-      params,
-      priority
-    });
-    console.log('任务已添加，ID:', taskId);
-    return taskId;
-  } catch (error) {
-    console.error('添加任务失败:', error);
-  }
-};
-
-// 获取任务列表
-const listTasks = async () => {
-  try {
-    const tasks = await window.__TAURI__.invoke('list_tasks');
-    console.log('当前任务列表:', tasks);
-    return tasks;
-  } catch (error) {
-    console.error('获取任务列表失败:', error);
-  }
-};
-```
-
-监听任务事件：
-
-```javascript
-// 监听任务事件
-window.__TAURI__.event.listen('task_event', (event) => {
-  const task = event.payload;
-  console.log('任务更新:', task);
-  
-  // 更新UI显示任务进度
-  updateTaskProgress(task.id, task.progress, task.status);
-});
-```
 
 ## 许可证
 

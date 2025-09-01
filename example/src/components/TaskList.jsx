@@ -1,6 +1,25 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import { invoke } from '@tauri-apps/api/core';
 
-const TaskList = ({ tasks, onCancelTask }) => {
+const TaskList = ({ tasks: initialTasks, onCancelTask }) => {
+  const [tasks, setTasks] = useState(initialTasks);
+
+  useEffect(() => {
+    setTasks(initialTasks);
+  }, [initialTasks]);
+
+  useEffect(() => {
+    const interval = setInterval(async () => {
+      try {
+        const updatedTasks = await invoke('plugin:task-queue|get_all_tasks');
+        setTasks(updatedTasks);
+      } catch (error) {
+        console.error('Failed to refresh tasks:', error);
+      }
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, []);
   if (tasks.length === 0) {
     return <div className="task-list-empty">暂无任务</div>;
   }
