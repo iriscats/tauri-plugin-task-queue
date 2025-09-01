@@ -1,29 +1,29 @@
 # Tauri Plugin Task Queue
 
-这是一个用于 Tauri 应用程序的任务队列插件，支持优先级任务调度和前后端任务处理。
+A task queue plugin for Tauri applications that supports priority-based task scheduling and processing for both frontend and backend tasks.
 
-## 功能特性
+## Features
 
-- 任务队列管理
-- 优先级任务调度
-- 前后端任务处理
-- 任务状态跟踪
-- 任务进度报告
+- Task queue management
+- Priority-based task scheduling
+- Frontend and backend task handling
+- Task status tracking
+- Task progress reporting
 
-## 安装
+## Installation
 
-在 `Cargo.toml` 中添加依赖：
+Add the following to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-tauri-plugin-task-queue = { path = "." }
+tauri-plugin-task-queue = { git = "https://github.com/iriscats/tauri-plugin-task-queue" }
 ```
 
-## 使用方法
+## Usage
 
-### 基本设置
+### Basic Setup
 
-在 `main.rs` 中初始化任务队列：
+Initialize the task queue in your `main.rs`:
 
 ```rust
 use tauri_plugin_task_queue::{init, core::task::{Task, TaskStatus}};
@@ -36,7 +36,7 @@ fn main() {
                 .add_handler("download", |mut task, app_handle| {
                     tokio::spawn(async move {
                         println!("Handling download task: {}", task.id);
-                        // 模拟任务执行
+                        // Simulate task execution
                         for i in 0..=100 {
                             tokio::time::sleep(std::time::Duration::from_millis(50)).await;
                             task.progress = i;
@@ -55,64 +55,64 @@ fn main() {
 }
 ```
 
-### 前端调用
+### Frontend Usage
 
-在前端可以通过 Tauri 命令调用任务队列：
+You can interact with the task queue from the frontend using Tauri commands:
 
 ```javascript
 import { invoke } from '@tauri-apps/api';
 
-// 添加任务到队列
+// Add a task to the queue
 await invoke('add_task', {
   taskType: 'my_task_type',
-  params: { /* 任务参数 */ },
-  priority: 1  // 0: 高, 1: 中, 2: 低
+  params: { /* task parameters */ },
+  priority: 1  // 0: High, 1: Medium, 2: Low
 });
 
-// 获取所有任务
+// Get all tasks
 await invoke('get_all_tasks');
 ```
 
-## API 参考
+## API Reference
 
 ### `init()`
 
-初始化任务队列插件。
+Initializes the task queue plugin.
 
 ### `Builder.add_handler(task_type, handler)`
 
-注册任务处理器。
+Registers a task handler.
 
-**参数：**
-- `task_type`: 任务类型字符串。
-- `handler`: 任务处理函数，接受 `Task` 和 `AppHandle` 作为参数，返回 `tokio::task::JoinHandle<()>`。
+**Arguments:**
+- `task_type`: A string representing the task type.
+- `handler`: The task handler function, which takes a `Task` and an `AppHandle` as arguments and returns a `tokio::task::JoinHandle<()>`.
 
 ### `Builder.build()`
 
-构建 Tauri 插件。
+Builds the Tauri plugin.
 
-### Tauri 命令
+### Tauri Commands
 
-- `add_task(taskType: string, params: object, priority?: number)`: 添加任务到队列。
-- `get_all_tasks()`: 获取所有任务列表。
+- `add_task(taskType: string, params: object, priority?: number)`: Adds a task to the queue.
+- `get_all_tasks()`: Retrieves a list of all tasks.
 
-## 前端示例
+## Frontend Example
 
-项目包含一个完整的前端使用示例，位于 `examples/frontend` 目录中。
+The project includes a complete frontend example in the `examples/frontend` directory.
 
-### 示例功能
+### Example Features
 
-- 添加任务到队列
-- 查看任务列表和状态
-- 监听任务进度更新
-- 支持不同优先级的任务
+- Add tasks to the queue
+- View task list and statuses
+- Listen for task progress updates
+- Support for different task priorities
 
-### 运行示例
+### Running the Example
 
-1. 确保已安装Tauri开发环境
-2. 在项目根目录运行：`cargo tauri dev`
-3. 应用启动后，可以添加和管理任务
+1. Ensure you have the Tauri development environment set up.
+2. Run `cargo tauri dev` in the project root.
+3. Once the application starts, you can add and manage tasks.
 
-## 许可证
+## License
 
 MIT
